@@ -1,0 +1,76 @@
+---
+title: "Shiny data setup"
+author: "Antonio Ahn"
+date: "23/04/2020"
+output: html_document
+---
+
+
+## NZM cell lines dataset # total same names (74 samples)
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+## NZM cell lines dataset # total same names (74 samples)
+NZM_RNAseqdata_boxplot <- read_csv(file = "data/All_NZM_tpm_GeneName_tidied.csv")
+#  24613 rows (for genes), 76 columns (first 2 columns are "ensemblID" and "symbols")
+dim(NZM_RNAseqdata_boxplot)
+# remove the "ensemblID" column
+NZM_RNAseqdata_corplot <- NZM_RNAseqdata_boxplot[,-1]
+NZM_RNAseqdata_boxplot <- NZM_RNAseqdata_boxplot[,-1]
+# batch1 samples (40 samples. NZM1 to NZM98)
+batch1_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM1:NZM98) %>% colnames
+# batch2 samples (34 samples. NZM1 to NZM98)
+batch2_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM_10:NZM_97) %>% colnames
+# all samples
+NZM_batch1and2_samples <- c(batch1_samples,batch2_samples)
+# tidy up the NZM_RNAseqdata_boxplot dataframe for boxplots
+NZM_RNAseqdata_boxplot <- gather(NZM_RNAseqdata_boxplot, key = samples, value = values, -c(symbols))
+NZM_RNAseqdata_boxplot$values <- log2(NZM_RNAseqdata_boxplot$values + 1)
+NZM_RNAseqdata_boxplot$batch <- ifelse(NZM_RNAseqdata_boxplot$samples %in% batch1_samples, "batch1", "batch2") %>% factor 
+NZM_RNAseqdata_boxplot$samples <- NZM_RNAseqdata_boxplot$samples %>% factor
+```
+
+# PDL1 cell lines dataset # total same names (23 samples)
+
+```{r}
+## PDL1 cell lines dataset # total same names (23 samples)
+
+PDL1_RNAseqdata_boxplot <- read_csv(file="data/TPM.rBE.PDL1_tidied.csv")
+PDL1_RNAseqdata_sampleinfo <- read_csv(file="data/s2c_PDL1.csv")
+
+PDL1_RNAseqdata_sampleinfo$batch <- factor(PDL1_RNAseqdata_sampleinfo$batch, levels = c(1,2,3,4), labels = c("batch1", "batch2", "batch3", "batch4"))
+
+
+PDL1_RNAseqdata_corplot <- PDL1_RNAseqdata_boxplot
+PDL1_RNAseqdata_boxplot <- gather(PDL1_RNAseqdata_boxplot, key = samples, value = values, -c(symbols))
+
+PDL1_samplenames <- PDL1_RNAseqdata_sampleinfo$newnames
+
+# Adding batch information
+PDL1_RNAseqdata_boxplot$batch <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch1")$newnames, "batch1", 
+                                        ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch2")$newnames, "batch2", 
+                                               ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch3")$newnames, "batch3", "batch4")))
+# adding mutation information
+PDL1_RNAseqdata_boxplot$mut.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$newnames, "BRAF",
+                                              ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$newnames, "NRAS", "WT"))
+# adding PDL1 information
+PDL1_RNAseqdata_boxplot$PDL1.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Inducible")$newnames, "Inducible",
+                                               ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Intermediate")$newnames, "Intermediate", "Constitutive"))
+```
+
+```{r}
+save.image(file = "data/NZM_PDL1_data.RData")
+
+```
+
+
+
+
+
+
+
+
+

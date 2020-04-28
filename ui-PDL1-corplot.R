@@ -1,0 +1,70 @@
+
+
+fluidPage(column(width = 3,
+                 box(title = tagList(icon("dna"), "Enter Parameters for the correlation plot"),
+                     width = NULL,
+                     solidHeader = TRUE,
+                     height = "950",
+                     status = "danger",
+                     footer = "press make_boxplot to generate the new figure",
+                     textInput(inputId= "PDL1_corplot_gene1", label = "Enter your gene (x-axis):", value = "SOX10"), 
+                     textInput(inputId = "PDL1_corplot_gene2", label = "Enter your gene (y-axis):", value = "MITF"),
+                     checkboxGroupInput(inputId = "PDL1_corplot_batch", 
+                                       label = "select batch", 
+                                       choices = list("batch1" = "batch1", "batch2" = "batch2", "batch3" = "batch3", "batch4" = "batch4"), 
+                                       selected = "batch1"),
+                     do.call(actionBttn, c(list( inputId = "PDL1_make_corplot", label = "make plot", icon = icon("play")), actionBttnParams)),
+                     downloadButton(outputId = "PDL1_download_corplot_data",label = "Download data")
+                 ),
+                 box(title = tagList(icon("dna"), "co-expression analysis"),
+                     width = NULL,
+                     height = 600,
+                     solidHeader = TRUE,
+                     status = "info",
+                     textInput(inputId= "PDL1_coexp_gene1", label = "Enter your gene", value = "PAX3"),
+                     selectInput(inputId= "PDL1_coexp_method", label = "correlation coefficient", choices = c("pearson","spearman","kendall"), selected = "pearson"),
+                     checkboxGroupInput(inputId = "PDL1_coexp_batch", 
+                                        label = "select batch", 
+                                        choices = list("batch1" = "batch1", "batch2" = "batch2", "batch3" = "batch3", "batch4" = "batch4"), 
+                                        selected = "batch1"),
+                     do.call(actionBttn, c(list( inputId = "PDL1_make_coexp", label = "make table", icon = icon("play")), actionBttnParams)),
+                     downloadButton(outputId = "PDL1_download_coexp_data",label = "Download data")
+                 ),
+                 box(title = tagList(icon("dna"), "Enter Parameters for the correlation plot"),
+                     width = NULL,
+                     solidHeader = TRUE,
+                     status = "success",
+                     checkboxInput("PDL1_selectsamples_corplot","Select sample groups?", value=FALSE), #upload a file of gene names
+                     conditionalPanel("input.PDL1_selectsamples_corplot==true",
+                                      textInput(inputId= "PDL1_corplot_gene3", label = "Enter your gene (x-axis):", value = ""), 
+                                      textInput(inputId = "PDL1_corplot_gene4", label = "Enter your gene (y-axis):", value = ""),
+                                      selectizeInput(inputId = "PDL1_sampleselect_g1_corplot","select samples",choices= PDL1_samplenames, multiple=TRUE)),
+                     do.call(actionBttn, c(list( inputId = "PDL1_make_corplot_samples", label = "make plot", icon = icon("play")), actionBttnParams)),
+                     downloadButton(outputId = "PDL1_download_corplot_data_samples", label = "Download data")
+                 )
+),
+column(width = 9,
+       box(title = "correlation plot",
+           status = "danger",
+           solidHeader = TRUE,
+           width = NULL,
+           plotly::plotlyOutput("PDL1_plotly_corplot_out"),
+           textOutput("PDL1_corvalues_out"), 
+           DT::DTOutput("DT_PDL1_corplot_df")
+       ),
+       box(title = "coexpression analysis",
+           status = "info",
+           solidHeader = TRUE,
+           width = NULL,
+           DT::DTOutput("DT_PDL1_coexp_df")
+       ),
+       box(title = "correlation plot with selected samples",
+           status = "success",
+           solidHeader = TRUE,
+           width = NULL,
+           plotly::plotlyOutput("PDL1_plotly_corplot_samples_out"),
+           textOutput("PDL1_corvalues_samples_out"),
+           DT::DTOutput("DT_PDL1_corplot_samples_df")
+       )
+)
+)
