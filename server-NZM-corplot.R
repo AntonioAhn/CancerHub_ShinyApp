@@ -7,7 +7,7 @@ NZM_RNAseqdata_corplot_df <- eventReactive(input$NZM_make_corplot, {
     data.frame(row.names = 1) %>% 
     t %>% 
     as_tibble(rownames = "samples") %>% 
-    mutate(batch = ifelse(samples %in%  batch1_samples, "batch1", "batch2"))
+    mutate(batch = ifelse(samples %in%  NZM_batch1_samples, "batch1", "batch2"))
 }, 
 ignoreNULL = TRUE,
 ignoreInit = FALSE)
@@ -68,7 +68,7 @@ output$NZM_download_corplot_data <- downloadHandler(
 
 NZM_RNAseqdata_coexp_df <- eventReactive(input$NZM_make_coexp,{
     df <- NZM_RNAseqdata_corplot %>% data.frame(row.names = TRUE) %>% as.matrix
-    batchgroups <- ifelse(colnames(df) %in% batch1_samples, "batch1", "batch2")
+    batchgroups <- ifelse(colnames(df) %in% NZM_batch1_samples, "batch1", "batch2")
     df <- df[,batchgroups %in% input$NZM_coexp_batch]
     #df <- df[,get(isolate({input$coexp_batch}))]
     # taking out the genes (1003 genes, leaving 23610 genes left) with a row variance of 0. These genes cannot have a correlation value therefore warning meassages that comes up seems to slow down this function
@@ -76,8 +76,9 @@ NZM_RNAseqdata_coexp_df <- eventReactive(input$NZM_make_coexp,{
     geneexpr <- df[input$NZM_coexp_gene1,]
     cor.df <- apply(df, 1, function(x){cor(geneexpr, x, method = input$NZM_coexp_method) }) %>% 
       sort(decreasing=TRUE) %>% 
-      head(n=1001) %>% 
-      tail(n=1000) %>% data.frame
+      data.frame()
+#      head(n=1001) %>% 
+#      tail(n=1000) %>% data.frame
     colnames(cor.df) <- "cor"
     cor.df$p.value <- apply(df[rownames(cor.df),], 1, function(x){cor.test(geneexpr, x, method = input$NZM_coexp_method)$p.value})
     return(cor.df)
@@ -112,7 +113,7 @@ NZM_RNAseqdata_corplot_samples_df <- eventReactive(input$NZM_make_corplot_sample
     data.frame(row.names = 1) %>% 
     t %>% 
     as_tibble(rownames = "samples") %>% 
-    mutate(batch = ifelse(samples %in%  batch1_samples, "batch1", "batch2"))
+    mutate(batch = ifelse(samples %in%  NZM_batch1_samples, "batch1", "batch2"))
 }, 
 ignoreNULL = FALSE,
 ignoreInit = TRUE)

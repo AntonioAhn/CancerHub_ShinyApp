@@ -21,15 +21,15 @@ dim(NZM_RNAseqdata_boxplot)
 NZM_RNAseqdata_corplot <- NZM_RNAseqdata_boxplot[,-1]
 NZM_RNAseqdata_boxplot <- NZM_RNAseqdata_boxplot[,-1]
 # batch1 samples (40 samples. NZM1 to NZM98)
-batch1_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM1:NZM98) %>% colnames
+NZM_batch1_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM1:NZM98) %>% colnames
 # batch2 samples (34 samples. NZM1 to NZM98)
-batch2_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM_10:NZM_97) %>% colnames
+NZM_batch2_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM_10:NZM_97) %>% colnames
 # all samples
-NZM_batch1and2_samples <- c(batch1_samples,batch2_samples)
+NZM_batch1and2_samples <- c(NZM_batch1_samples, NZM_batch2_samples)
 # tidy up the NZM_RNAseqdata_boxplot dataframe for boxplots
 NZM_RNAseqdata_boxplot <- gather(NZM_RNAseqdata_boxplot, key = samples, value = values, -c(symbols))
 NZM_RNAseqdata_boxplot$values <- log2(NZM_RNAseqdata_boxplot$values + 1)
-NZM_RNAseqdata_boxplot$batch <- ifelse(NZM_RNAseqdata_boxplot$samples %in% batch1_samples, "batch1", "batch2") %>% factor 
+NZM_RNAseqdata_boxplot$batch <- ifelse(NZM_RNAseqdata_boxplot$samples %in% NZM_batch1_samples, "batch1", "batch2") %>% factor 
 NZM_RNAseqdata_boxplot$samples <- NZM_RNAseqdata_boxplot$samples %>% factor
 ```
 
@@ -62,6 +62,14 @@ PDL1_RNAseqdata_boxplot$PDL1.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %
 ```
 
 ```{r}
+PDL1_batch1_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch1")$newnames
+PDL1_batch2_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch2")$newnames
+PDL1_batch3_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch3")$newnames
+PDL1_batch4_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch4")$newnames
+PDL1_all_samples <- PDL1_RNAseqdata_sampleinfo$newnames 
+```
+
+```{r eval=FALSE}
 save.image(file = "data/NZM_PDL1_data.RData")
 
 ```

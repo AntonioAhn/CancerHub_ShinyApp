@@ -33,13 +33,17 @@ tagList(dashboardPage(skin = "blue",
     )
     ),
     dashboardSidebar(
-        sidebarMenu(id = "side_bar",
+      sidebarMenu(id = "side_bar",
                     menuItem(text = "Information",
                              tabName = "Info"),
-                    menuItem(text = "RNAseq data (NZM cell lines)",
-                             tabName = "RNAseq_NZM"),
-                    menuItem(text = "RNAseq data (PD-L1 cell lines)",
-                             tabName = "RNAseq_PDL1"),
+                    menuItem(text = "RNAseq data",
+                             tabName = "RNAseq_NZM", 
+                             badgeLabel = "NZM cell lines",
+                             badgeColor = "blue"),
+                    menuItem(text = "RNAseq data",
+                             tabName = "RNAseq_PDL1",
+                             badgeLabel = "PD-L1 cell lines",
+                             badgeColor = "blue"),
                     menuItem(text = "DNA methylation Data (RRBS)",
                              tabName = "RRBS")
         )
@@ -48,38 +52,42 @@ tagList(dashboardPage(skin = "blue",
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")),
       tabItems(
-        tabItem(tabName = "Info", tabBox(
-              title = "",
-              width = NULL,
-              tabPanel(title = "Welcome to CanerHub NZM analysis",
-                       icon = icon("info"),
-                       fluidRow(column(includeMarkdown("document/Information.md"), width = 12, offset = 0))
-                       )
-              )),
-            tabItem(tabName = "RRBS"),
-            tabItem(tabName = "RNAseq_NZM",
-                    tabBox(title = "", width = NULL, 
-                           tabPanel(title = "Boxplot all samples",
-                                    source(
-                                      file = "ui-NZM-boxplot.R",
-                                      local = TRUE,
-                                      encoding = "UTF-8"
-                                    )
+        tabItem(tabName = "Info", tabBox(title = "", width = NULL,
+                                         tabPanel(title = "Welcome to CanerHub",
+                                                  icon = icon("info"),
+                                                  fluidRow(column(includeMarkdown("document/Information.md"), width = 12, offset = 0))),
+                                         tabPanel(title = "NZM cell lines information",
+                                                  icon = icon("info"),
+                                                  fluidRow(column(includeMarkdown("document/NZMcellLines.md"), width = 12, offset = 0))),
+                                         tabPanel(title = "PDL1 cell lines information",
+                                                  icon = icon("info"),
+                                                  fluidRow(column(includeMarkdown("document/PDL1cellLines.md"), width = 12, offset = 0)))
+                                         )),
+        tabItem(tabName = "RRBS"),
+        tabItem(tabName = "RNAseq_NZM",
+                tabBox(title = "", width = NULL, 
+                       tabPanel(title = "Boxplot all samples",
+                                source(
+                                  file = "ui-NZM-boxplot.R",
+                                  local = TRUE,
+                                  encoding = "UTF-8"
+                                  )
                            ),
                            tabPanel(title = "correlation plot",
                                     source(
                                       file = "ui-NZM-corplot.R",
                                       local = TRUE,
                                       encoding = "UTF-8"
-                                    )
-                           ),
+                                      )
+                                    ),
                            tabPanel(title = "PCA plot",
                                     source(
                                       file = "ui-NZM-PCA.R",
                                       local = TRUE,
                                       encoding = "UTF-8"
+                                      )
                                     )
-                           )
+                    
                     )
             ),
         tabItem(tabName = "RNAseq_PDL1",
@@ -103,13 +111,14 @@ tagList(dashboardPage(skin = "blue",
                                   file = "ui-PDL1-PCA.R",
                                   local = TRUE,
                                   encoding = "UTF-8"
+                                  )
                                 )
+                       
                        )
                 )
         )
-        )
-    ), 
-),
+    )
+    ),
 tags$footer(
     tags$p("Copyright © 2019"), 
     tags$a(" Cancer Hub", href = "https://cancerhub.net/"),
