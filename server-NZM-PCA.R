@@ -56,7 +56,7 @@ output$NZM_plotly_PCAplot_b1_out <- renderPlotly(NZM_plotly_PCAplot_b1())
 ### make the reactive prcomp dataframe
 NZM_prcomp_df_b2 <- eventReactive(input$NZM_make_PCAplot_b2, {
   PCA.df <- data.frame(NZM_RNAseqdata_corplot, row.names = 1)[,c(input$NZM_PCAplot_samples_g1_b2,input$NZM_PCAplot_samples_g2_b2,input$NZM_PCAplot_samples_g3_b2,input$NZM_PCAplot_samples_g4_b2)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$NZM_PCAplot_topgenes_b2) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },
@@ -105,7 +105,7 @@ output$NZM_plotly_PCAplot_b2_out <- renderPlotly(NZM_plotly_PCAplot_b2())
 ### make the reactive prcomp dataframe
 NZM_prcomp_df_b1and2 <- eventReactive(input$NZM_make_PCAplot_b1and2, {
   PCA.df <- data.frame(NZM_RNAseqdata_corplot, row.names = 1)[,c(input$NZM_PCAplot_samples_g1_b1and2,input$NZM_PCAplot_samples_g2_b1and2,input$NZM_PCAplot_samples_g3_b1and2,input$NZM_PCAplot_samples_g4_b1and2)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$NZM_PCAplot_topgenes_b1and2) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },

@@ -56,7 +56,7 @@ output$PDL1_plotly_PCAplot_b1_out <- renderPlotly(PDL1_plotly_PCAplot_b1())
 ### make the reactive prcomp dataframe
 PDL1_prcomp_df_b2 <- eventReactive(input$PDL1_make_PCAplot_b2, {
   PCA.df <- data.frame(PDL1_RNAseqdata_corplot, row.names = 1)[,c(input$PDL1_PCAplot_samples_g1_b2,input$PDL1_PCAplot_samples_g2_b2,input$PDL1_PCAplot_samples_g3_b2,input$PDL1_PCAplot_samples_g4_b2)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$PDL1_PCAplot_topgenes_b2) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },
@@ -105,7 +105,7 @@ output$PDL1_plotly_PCAplot_b2_out <- renderPlotly(PDL1_plotly_PCAplot_b2())
 ### make the reactive prcomp dataframe
 PDL1_prcomp_df_b3 <- eventReactive(input$PDL1_make_PCAplot_b3, {
   PCA.df <- data.frame(PDL1_RNAseqdata_corplot, row.names = 1)[,c(input$PDL1_PCAplot_samples_g1_b3,input$PDL1_PCAplot_samples_g2_b3,input$PDL1_PCAplot_samples_g3_b3,input$PDL1_PCAplot_samples_g4_b3)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$PDL1_PCAplot_topgenes_b3) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },
@@ -154,7 +154,7 @@ output$PDL1_plotly_PCAplot_b3_out <- renderPlotly(PDL1_plotly_PCAplot_b3())
 ### make the reactive prcomp dataframe
 PDL1_prcomp_df_b4 <- eventReactive(input$PDL1_make_PCAplot_b4, {
   PCA.df <- data.frame(PDL1_RNAseqdata_corplot, row.names = 1)[,c(input$PDL1_PCAplot_samples_g1_b4,input$PDL1_PCAplot_samples_g2_b4,input$PDL1_PCAplot_samples_g3_b4,input$PDL1_PCAplot_samples_g4_b4)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$PDL1_PCAplot_topgenes_b4) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },
@@ -203,7 +203,7 @@ output$PDL1_plotly_PCAplot_b4_out <- renderPlotly(PDL1_plotly_PCAplot_b4())
 ### make the reactive prcomp dataframe
 PDL1_prcomp_df_bAll <- eventReactive(input$PDL1_make_PCAplot_bAll, {
   PCA.df <- data.frame(PDL1_RNAseqdata_corplot, row.names = 1)[,c(input$PDL1_PCAplot_samples_g1_bAll,input$PDL1_PCAplot_samples_g2_bAll,input$PDL1_PCAplot_samples_g3_bAll,input$PDL1_PCAplot_samples_g4_bAll)]
-  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = 10) %>% names
+  high_var_genes <- PCA.df %>% apply(1, var) %>% sort(decreasing = TRUE) %>% head(n = input$PDL1_PCAplot_topgenes_bAll) %>% names
   prcomp.df <- prcomp(t(PCA.df[high_var_genes,]), center = TRUE, scale = TRUE)
   prcomp.df
 },

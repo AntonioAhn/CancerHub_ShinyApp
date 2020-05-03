@@ -20,7 +20,7 @@ ignoreInit = FALSE)
 PDL1_plotly_corplot <- eventReactive(input$PDL1_make_corplot ,{
   PDL1_RNAseqdata_corplot_df() %>% 
     filter(batch %in% isolate({input$PDL1_corplot_batch})) %>% 
-    plot_ly(x = ~get(isolate({input$PDL1_corplot_gene1})), y = ~get(isolate({input$PDL1_corplot_gene2})), hoverinfo = "text",
+    plot_ly(x = ~get(isolate({input$PDL1_corplot_gene1})), y = ~get(isolate({input$PDL1_corplot_gene2})), hoverinfo = "text", symbol = ~batch,
             text = ~paste0(isolate({input$PDL1_corplot_gene1}), ": ", get(isolate({input$PDL1_corplot_gene1})), "<br>",
                            isolate({input$PDL1_corplot_gene2}), ": ", get(isolate({input$PDL1_corplot_gene2})), "<br>",
                            'sample: ', samples, "<br>")) %>% 

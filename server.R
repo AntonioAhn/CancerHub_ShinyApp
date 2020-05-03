@@ -16,6 +16,9 @@ shinyServer(function(input, output, session){
  source(file = "server-NZM-PCA.R",
         local = TRUE,
         encoding = "UTF-8")
+  source(file = "server-NZM-hclust.R",
+         local = TRUE,
+         encoding = "UTF-8")
  #make boxplot
   source(file = "server-PDL1-boxplot.R",
          local = TRUE,

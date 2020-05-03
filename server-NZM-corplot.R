@@ -77,8 +77,6 @@ NZM_RNAseqdata_coexp_df <- eventReactive(input$NZM_make_coexp,{
     cor.df <- apply(df, 1, function(x){cor(geneexpr, x, method = input$NZM_coexp_method) }) %>% 
       sort(decreasing=TRUE) %>% 
       data.frame()
-#      head(n=1001) %>% 
-#      tail(n=1000) %>% data.frame
     colnames(cor.df) <- "cor"
     cor.df$p.value <- apply(df[rownames(cor.df),], 1, function(x){cor.test(geneexpr, x, method = input$NZM_coexp_method)$p.value})
     return(cor.df)

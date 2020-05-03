@@ -5,6 +5,8 @@ library(DT)
 library(shinyWidgets)
 library(ggsci)
 library(shinycssloaders)
+library(shinyHeatmaply)
+library(heatmaply)
 
 
 ##-------------------------------------------------------------
