@@ -69,6 +69,25 @@ fluidPage(column(width = 12,
                                                      plotly::plotlyOutput("PDL1_plotly_corplot_samples_out") %>% withSpinner(),
                                                      textOutput("PDL1_corvalues_samples_out"),
                                                      DT::DTOutput("DT_PDL1_corplot_samples_df") %>% withSpinner()))
+                                 )),
+                        tabPanel(title = tagList(icon("dna"), "correlation plot (PD-L1 protein)"),
+                                 fluidRow(column(width = 3,
+                                                 box(title = tagList(icon("dna"), "Enter Parameters for the correlation plot"),
+                                                     width = NULL,
+                                                     solidHeader = TRUE,
+                                                     status = "primary",
+                                                     textInput(inputId= "PDL1_corplot_gene_PDL1cor", label = "Enter your gene (x-axis):", value = "CD274"), 
+                                                     selectizeInput(inputId = "PDL1_sampleselect_PDL1cor","select samples",choices= PDL1_samplenames, multiple=TRUE, selected = PDL1_samplenames),
+                                                     do.call(actionBttn, c(list( inputId = "PDL1_make_corplot_PDL1cor", label = "make plot", icon = icon("play")), actionBttnParams)),
+                                                     downloadButton(outputId = "PDL1_download_corplot_data_PDL1cor", label = "Download data"))),
+                                          column(width = 9,
+                                                 box(title = "correlation with PD-L1 protein levels",
+                                                     status = "primary",
+                                                     solidHeader = TRUE,
+                                                     width = NULL,
+                                                     plotly::plotlyOutput("PDL1_plotly_corplot_PDL1cor_out") %>% withSpinner(),
+                                                     textOutput("PDL1_corvalues_PDL1cor_out"),
+                                                     DT::DTOutput("DT_PDL1_corplot_PDL1cor_df") %>% withSpinner()))
                                  ))
                  )
 )

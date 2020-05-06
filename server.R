@@ -31,6 +31,9 @@ shinyServer(function(input, output, session){
   source(file = "server-PDL1-PCA.R",
          local = TRUE,
          encoding = "UTF-8")
+  source(file = "server-PDL1-hclust.R",
+         local = TRUE,
+         encoding = "UTF-8")
     #render corplot
     # output$corplot <- plotly::renderPlotly(gg_corplot())
   #  output$corplot <- renderPlot(gg_corplot())

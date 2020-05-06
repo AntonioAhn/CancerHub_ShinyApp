@@ -1,5 +1,5 @@
 
-# For the first half where all samples are looked at 
+# Correlation plot where all samples are used
 ### make the reactive dataframe
 NZM_RNAseqdata_corplot_df <- eventReactive(input$NZM_make_corplot, {
   NZM_RNAseqdata_corplot %>% 
@@ -101,9 +101,10 @@ output$NZM_download_coexp_data <- downloadHandler(
 
 
 
-## --------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------------------------------------------------------------------------
+## ----------------------------------------------------------------------------------------------------------------------------------------------
 
-# For the second half where only selected samples are looked at 
+# Correlation plot for where only selected samples are looked at 
 ### make the reactive dataframe
 NZM_RNAseqdata_corplot_samples_df <- eventReactive(input$NZM_make_corplot_samples, {
   NZM_RNAseqdata_corplot %>% 

@@ -119,8 +119,14 @@ tagList(dashboardPage(skin = "blue",
                                   local = TRUE,
                                   encoding = "UTF-8"
                                   )
+                                ),
+                       tabPanel(title = "heatmap (sample and gene hclustering)",
+                                source(
+                                  file = "ui-PDL1-hclust.R",
+                                  local = TRUE,
+                                  encoding = "UTF-8"
                                 )
-                       
+                       )
                        )
                 )
         )

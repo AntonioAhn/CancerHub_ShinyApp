@@ -69,16 +69,27 @@ PDL1_batch4_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch4")$new
 PDL1_all_samples <- PDL1_RNAseqdata_sampleinfo$newnames 
 ```
 
+# PD-L1 protein data 
+
+```{r}
+PDL1_FACS_df <- read.csv(file = "data/PDL1_FACS_data.csv", 
+row.names = 1)
+
+index <- match(colnames(PDL1_RNAseqdata_corplot)[-1], 
+      filter(PDL1_FACS_df, average == "median_sub")$newsample)
+
+PDL1_RNAseqdata_corplot <- rbind(PDL1_RNAseqdata_corplot, c("",log2(filter(PDL1_FACS_df, average == "median_sub")$PDL1[index])) %>% as.numeric)
+
+PDL1_RNAseqdata_corplot[57979, 1] <- "PDL1.protein"
+```
+
+# save data
+
 ```{r eval=FALSE}
 save.image(file = "data/NZM_PDL1_data.RData")
 
+load("data/NZM_PDL1_data.RData")
 ```
-
-
-
-
-
-
 
 
 
