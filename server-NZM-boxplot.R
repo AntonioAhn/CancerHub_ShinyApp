@@ -1,17 +1,19 @@
 
 ## first boxplot (all samples)
 
-NZM_boxplot_all_df <- eventReactive(input$NZM_make_boxplot_all, {filter(NZM_RNAseqdata_boxplot, symbols == input$NZM_boxplot_gene1, batch %in% input$NZM_boxplot_batch)}, 
+NZM_boxplot_all_df <- eventReactive(input$NZM_make_boxplot_all, {filter(NZM_RNAseqdata_boxplot, symbols == input$NZM_boxplot_gene1)}, 
                               ignoreNULL = FALSE, 
                               ignoreInit = FALSE)
 
 
-NZM_boxplot_all <- reactive({NZM_boxplot_all_df() %>% 
-    plot_ly(y = ~values,  type = "box", boxpoints = "all", jitter = 1, hoverinfo = "text", color = I(fut_color[2]), pointpos = 0,
+NZM_boxplot_all <- eventReactive(input$NZM_make_boxplot_all, {NZM_boxplot_all_df() %>% 
+    plot_ly(y = ~values,  type = "box", boxpoints = "all", jitter = 1, hoverinfo = "text", symbol = ~get(isolate({input$NZM_boxplot_mutgrp})), pointpos = 0,
             text = ~paste0(input$NZM_boxplot_gene1, ": ",values, "<br>",
                            'sample: ', samples)) %>% 
-    layout(yaxis = list(title = paste(isolate({input$NZM_boxplot_gene1}), "(log2 TPM)")), xaxis = list(showticklabels = FALSE, title = ""), showlegend = FALSE)
-})
+    layout(yaxis = list(title = paste(isolate({input$NZM_boxplot_gene1}), "(log2 TPM)")), xaxis = list(showticklabels = TRUE, title = ""), showlegend = FALSE)
+},
+ignoreNULL = FALSE, 
+ignoreInit = FALSE)
 
 
 # render boxplot
@@ -39,7 +41,6 @@ output$DT_NZM_boxplot <- DT::renderDT(NZM_boxplot_all_df())
 
 ## second boxplot (with selected samples)
 
-# , batch %in% input$boxplot_batch (removed) NZM_RNAseqdata_boxplot_new. This was removed
 NZM_boxplot_groups_df <- eventReactive(input$NZM_make_boxplot_groups, {
   filter(NZM_RNAseqdata_boxplot, symbols == input$NZM_boxplot_gene2) %>% 
     mutate(newgroup = ifelse(samples %in% input$NZM_sampleselect_g1_boxplot, "group1",

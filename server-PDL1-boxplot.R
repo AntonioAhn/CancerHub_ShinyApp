@@ -1,25 +1,48 @@
 
 ## first boxplot (all samples)
 
-PDL1_boxplot_all_df <- eventReactive(input$PDL1_make_boxplot_all, {filter(PDL1_RNAseqdata_boxplot, 
-                                                                          symbols == input$PDL1_boxplot_gene1, 
-                                                                          mut.subtype %in% input$PDL1_boxplot_mutation, 
-                                                                          PDL1.subtype %in% input$PDL1_boxplot_PDL1,
-                                                                          batch %in% input$PDL1_boxplot_batch
-                                                                          )},
-                                     ignoreNULL = FALSE, 
-                                     ignoreInit = FALSE)
+PDL1_boxplot_all_df <- eventReactive(input$PDL1_make_boxplot_all, {
+  df1 <- filter(PDL1_RNAseqdata_boxplot, symbols == input$PDL1_boxplot_gene1)
+  df2 <- filter(PDL1_RNAseqdata_boxplot, symbols %in% "PDL1.protein")
+  df1$PDL1.protein <- df2$values[match(df1$samples, df2$samples)]
+  df1
+},
+ignoreNULL = FALSE, 
+ignoreInit = TRUE)
 
-
-PDL1_boxplot_all <- reactive({PDL1_boxplot_all_df() %>% 
-    plot_ly(y = ~values,  type = "box", boxpoints = "all", jitter = 1, hoverinfo = "text", color = I(fut_color[2]), pointpos = 0,
-            text = ~paste0(isolate({input$PDL1_boxplot_gene1}), ": ",values, "<br>",
-                           'sample: ', samples, "<br>",
-                           'mut.subtype: ', mut.subtype, "<br>",
-                           'batch.group: ', batch, "<br>",
-                           'PDL1.subtype: ', PDL1.subtype, "<br>")) %>% 
-    layout(yaxis = list(title = paste(isolate({input$PDL1_boxplot_gene1}), "(log2 TPM)")), xaxis = list(showticklabels = FALSE, title = ""), showlegend = FALSE)
-})
+PDL1_boxplot_all <- eventReactive(input$PDL1_make_boxplot_all, {
+  if(input$PDL1_boxplot_mutgrp == "symbols"){
+    PDL1_boxplot_all_df() %>% 
+      plot_ly(y = ~values,  type = "box", boxpoints = "all", jitter = 1, hoverinfo = "text", pointpos = 0,
+              text = ~paste0(isolate({input$PDL1_boxplot_gene1}), ": ",values, "<br>",
+                             'sample: ', samples, "<br>",
+                             'mut.subtype: ', mut.subtype, "<br>")) %>% 
+      layout(yaxis = list(title = paste(isolate({input$PDL1_boxplot_gene1}), "(log2 TPM)")), xaxis = list(showticklabels = FALSE, title = ""), showlegend = FALSE)
+  } else if(input$PDL1_boxplot_mutgrp == "mut.subtype"){
+   PDL1_boxplot_all_df() %>% 
+      plot_ly(y = ~values,  type = "box", boxpoints = "all", jitter = 1, hoverinfo = "text", symbol = ~get(isolate({input$PDL1_boxplot_mutgrp})), pointpos = 0,
+              text = ~paste0(isolate({input$PDL1_boxplot_gene1}), ": ",values, "<br>",
+                             'sample: ', samples, "<br>",
+                             'mut.subtype: ', mut.subtype, "<br>")) %>% 
+      layout(yaxis = list(title = paste(isolate({input$PDL1_boxplot_gene1}), "(log2 TPM)")), xaxis = list(showticklabels = TRUE, title = ""), showlegend = FALSE)
+  } else {
+    PDL1_boxplot_all_df() %>% 
+      plot_ly() %>% 
+      add_boxplot(x = ~as.numeric(rep(5,23)), y = ~values, type = "box", hoverinfo = 'name+y') %>%
+      add_markers(x = ~jitter(as.numeric(rep(5,23))), y = ~values, color = ~PDL1.protein,
+                  marker = list(size = 6),
+                  hoverinfo = "text",
+                  text = ~paste0("Group: ",mut.subtype, "<br>",
+                                 isolate({input$PDL1_boxplot_gene1}), values),
+                  showlegend = FALSE)  %>% 
+      colorbar(title = "PDL1 protein") %>% 
+      layout(yaxis = list(title = paste(isolate({input$PDL1_boxplot_gene1}), "(log2 TPM)")),
+             xaxis = list(title = "", showticklabels = FALSE))
+  }
+  },
+  ignoreNULL = FALSE, 
+  ignoreInit = TRUE
+)
 
 
 # render boxplot

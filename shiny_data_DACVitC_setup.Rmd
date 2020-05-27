@@ -1,0 +1,255 @@
+---
+title: "Shiny data setup (DAC VitC treated)"
+author: "Antonio Ahn"
+date: "18/05/2020"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+# PDL1 cell lines dataset # total same names (23 samples)
+
+```{r}
+## PDL1 cell lines dataset # total same names (23 samples)
+
+# load the gene expression dataset (TPM values + with the removeBatcheffect (edgeR)) for 33 melanoma samples
+DACVitC_RNAseqdata_boxplot <- read_csv(file="~/Dropbox/2020/Shiny_casualcontract_MikeEccles/CancerHub_ShinyApp/data/TPM.rBE.DACVitC_tidied.csv") 
+# load the sample information table
+DACVitC_RNAseqdata_sampleinfo <- read_csv(file="~/Dropbox/2020/Shiny_casualcontract_MikeEccles/CancerHub_ShinyApp/data/PDL1.DACVitc.info.csv") 
+```
+
+
+# Making the DAC (only) objects
+
+This has been excluded for now 
+
+```{r eval=FALSE}
+# making a separate sampleinfo and boxplot dataframe for only the control and DAC treated samples (excluding VitC and VitC+DAC treated samples)
+DAC_RNAseqdata_sampleinfo <- filter(DACVitC_RNAseqdata_sampleinfo, condition %in% "control" | condition %in% "DAC")
+DAC_RNAseqdata_boxplot <- dplyr::select(DACVitC_RNAseqdata_boxplot, symbols, DAC_RNAseqdata_sampleinfo$sample)
+
+# DACVitC_RNAseqdata_corplot <- DACVitC_RNAseqdata_boxplot
+```
+
+```{r eval=FALSE}
+DAC_RNAseqdata_boxplot <- gather(DAC_RNAseqdata_boxplot, key=samples, value=values, -symbols)
+
+
+##----
+# adding the control and DAC group
+control_samplenames <- filter(DAC_RNAseqdata_sampleinfo, condition == "control")$sample
+DAC_RNAseqdata_boxplot$group <- ifelse(DAC_RNAseqdata_boxplot$samples %in% control_samplenames, "control", "DAC")
+
+##----
+# adding the mutation subtype
+BRAF_samplenames <- filter(DAC_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$sample
+NRAS_samplenames <- filter(DAC_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$sample
+DAC_RNAseqdata_boxplot$mut.subtype <- ifelse(DAC_RNAseqdata_boxplot$samples %in% BRAF_samplenames, "BRAF", 
+                                       ifelse(DAC_RNAseqdata_boxplot$samples %in% NRAS_samplenames, "NRAS","WT"))
+
+##----
+# adding paired group 
+# First need to add to the DAC_RNAseqdata_sampleinfo
+DAC_RNAseqdata_sampleinfo$paired <- DAC_RNAseqdata_sampleinfo$cellline %>% as.factor %>% as.numeric %>% sort
+# make a list with each pair
+pairednames <- c()
+for (i in 1:12){
+a <- filter(DAC_RNAseqdata_sampleinfo, paired == i)$sample
+pairednames[[i]] <- c(a) 
+}
+# adding paired group into DAC_RNAseqdata_boxplot
+DAC_RNAseqdata_boxplot$lines <- ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[1]], "1", 
+                                   ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[2]], "2",
+                                          ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[3]], "3",
+                                                 ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[4]], "4",
+                                                        ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[5]], "5",
+                                                               ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[6]], "6",
+                                                                      ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[7]], "7",
+                                                                             ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[8]], "8",
+                                                                                    ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[9]], "9", 
+                                                                                           ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[10]], "10", 
+                                                                                                  ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[11]], "11", "12")))))))))))
+
+DAC_RNAseqdata_boxplot$lines %>% table
+
+##----
+# add in cell line name 
+# names(pairednames) <- DAC_RNAseqdata_sampleinfo$cellline %>% unique
+DAC_RNAseqdata_boxplot$lines <- DAC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+DAC_RNAseqdata_boxplot$CellLines  <- factor(DAC_RNAseqdata_boxplot$lines, levels = c(1:12), labels = c(DAC_RNAseqdata_sampleinfo$cellline %>% unique))
+
+##----
+# making it into a factor and correcting the levels 
+DAC_RNAseqdata_boxplot$mut.subtype <- DAC_RNAseqdata_boxplot$mut.subtype %>% factor(levels=c("BRAF", "NRAS", "WT"))
+DAC_RNAseqdata_boxplot$group <- DAC_RNAseqdata_boxplot$group %>% factor(levels=c("control", "DAC"))
+# DAC_RNAseqdata_boxplot$lines <- DAC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+```
+
+# Making the DAC or/and VitC objects
+
+```{r}
+DACVitC_RNAseqdata_corplot <- DACVitC_RNAseqdata_boxplot 
+```
+
+```{r}
+DACVitC_RNAseqdata_boxplot <- gather(DACVitC_RNAseqdata_boxplot, key=samples, value=values, -symbols)
+
+##----
+# adding the control and DACVitC group
+control_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "control")$sample
+DAC_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "DAC")$sample
+VitC_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "VitC")$sample
+DACVitC_RNAseqdata_boxplot$group <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% control_samplenames, "control", 
+                                           ifelse(DACVitC_RNAseqdata_boxplot$samples %in% DAC_samplenames, "DAC",
+                                                  ifelse(DACVitC_RNAseqdata_boxplot$samples %in% VitC_samplenames, "VitC", "DAC.VitC")))
+
+##----
+# adding the mutation subtype
+BRAF_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$sample
+NRAS_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$sample
+DACVitC_RNAseqdata_boxplot$mut.subtype <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% BRAF_samplenames, "BRAF", 
+                                       ifelse(DACVitC_RNAseqdata_boxplot$samples %in% NRAS_samplenames, "NRAS","WT"))
+
+##----
+# adding paired group 
+# First need to add to the DACVitC_RNAseqdata_sampleinfo
+DACVitC_RNAseqdata_sampleinfo$paired <- DACVitC_RNAseqdata_sampleinfo$cellline %>% factor(levels = unique(DACVitC_RNAseqdata_sampleinfo$cellline)) %>% as.numeric %>% sort
+# make a list with each pair
+pairednames <- c()
+for (i in 1:12){
+a <- filter(DACVitC_RNAseqdata_sampleinfo, paired == i)$sample
+pairednames[[i]] <- c(a) 
+}
+# adding paired group into DACVitC_RNAseqdata_boxplot
+DACVitC_RNAseqdata_boxplot$lines <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[1]], "1", 
+                                   ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[2]], "2",
+                                          ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[3]], "3",
+                                                 ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[4]], "4",
+                                                        ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[5]], "5",
+                                                               ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[6]], "6",
+                                                                      ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[7]], "7",
+                                                                             ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[8]], "8",
+                                                                                    ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[9]], "9", 
+                                                                                           ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[10]], "10", 
+                                                                                                  ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[11]], "11", "12")))))))))))
+
+DACVitC_RNAseqdata_boxplot$lines %>% table
+
+##----
+# add in cell line name 
+# names(pairednames) <- DACVitC_RNAseqdata_sampleinfo$cellline %>% unique
+DACVitC_RNAseqdata_boxplot$lines <- DACVitC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+DACVitC_RNAseqdata_boxplot$CellLines  <- factor(DACVitC_RNAseqdata_boxplot$lines, levels = c(1:12), labels = c(DACVitC_RNAseqdata_sampleinfo$cellline %>% unique))
+
+##----
+# making it into a factor and correcting the levels 
+DACVitC_RNAseqdata_boxplot$mut.subtype <- DACVitC_RNAseqdata_boxplot$mut.subtype %>% factor(levels=c("BRAF", "NRAS", "WT"))
+DACVitC_RNAseqdata_boxplot$group <- DACVitC_RNAseqdata_boxplot$group %>% factor(levels=c("control", "DAC", "VitC", "DAC.VitC"))
+# DACVitC_RNAseqdata_boxplot$lines <- DACVitC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+```
+
+# save data
+
+```{r}
+rm(list = c("a", "control_samplenames", "i", "pairednames"))
+```
+
+```{r eval=FALSE}
+save.image(file = "data/PDL1_DACVitC_data.RData")
+
+load("data/PDL1_DACVitC_data.RData")
+```
+
+
+
+
+
+
+# Trashed 
+
+```{r}
+library(ggrepel)
+ggplot_DAC <- function(gene){
+filter(DAC_RNAseqdata_boxplot, symbols == gene) %>% 
+  ggplot(aes(y = values, x = group, col = group)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point(alpha = 1, size = 2) +
+  geom_line(aes(group=lines), col="red") + 
+# geom_jitter(alpha = 1, size = 2, position = position_jitter(seed = 1)) + 
+    scale_color_manual(values = starT_color[c(1,2)]) + 
+    ggtitle(gene) +
+  # position = position_jitter(seed = 1) taken out  
+    geom_text_repel(aes(label = samples), size = 3, vjust = 2) +
+    theme_bw() + 
+    scale_y_continuous("gene expression (log2 (TPM + 1))") +
+    theme(axis.text=element_text(size=12),
+       axis.title.x.bottom=element_blank(),
+       axis.title.y=element_text(size=12), legend.position = "none", plot.title = element_text(hjust=0.5,size=15))
+}
+
+ggplot_DAC("CD274")
+```
+
+
+
+
+
+```{r}
+# getting the sample names for the inducible group
+IND_samplenames <- filter(DAC_RNAseqdata_sampleinfo, PDL1.group == "inducible")$sample
+control_samplenames <- filter(DAC_RNAseqdata_sampleinfo, condition == "control")$sample
+
+# making the 4 groups that shows the IND_control, IND_DAC, CON_control and CON_DAC groups
+TMM.mat.DAC.ggplot$group <- ifelse(TMM.mat.DAC.ggplot$samples %in% IND_samplenames & TMM.mat.DAC.ggplot$samples %in% control_samplenames, "IND_control", ifelse(TMM.mat.DAC.ggplot$samples %in% IND_samplenames & !TMM.mat.DAC.ggplot$samples %in% control_samplenames, "IND_DAC", ifelse(!TMM.mat.DAC.ggplot$samples %in% IND_samplenames & TMM.mat.DAC.ggplot$samples %in% control_samplenames, "CON_control", "CON_DAC")))
+
+pairednames <- c()
+for (i in 1:10){
+a <- filter(s2c, paired == i)$newnames
+pairednames[[i]] <- c(a) 
+}
+
+TMM.mat.DAC.ggplot$lines <- ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[1]], "1", 
+                                   ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[2]], "2",
+                                          ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[3]], "3",
+                                                 ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[4]], "4",
+                                                        ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[5]], "5",
+                                                               ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[6]], "6",
+                                                                      ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[7]], "7",
+                                                                             ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[8]], "8",
+                                                                                    ifelse(TMM.mat.DAC.ggplot$samples %in% pairednames[[9]], "9", "10")))))))))
+
+# making it into a factor and correcting the levels 
+TMM.mat.DAC.ggplot$group <- TMM.mat.DAC.ggplot$group %>% factor(levels=c("IND_control", "IND_DAC", "CON_control", "CON_DAC"))
+TMM.mat.DAC.ggplot$lines <- TMM.mat.DAC.ggplot$lines %>% factor(levels = c(1:10))
+
+# making 4 colors
+# ggsci::pal_npg()(10) %>% show_col
+# ggsci::pal_npg()(10) %>% show_col
+# col_npg4 <- ggsci::pal_npg()(10)[c(1,9,3,4)]
+col_npg4 <- c(ggsci::pal_npg()(10)[c(3,4,9)], "black")
+
+# pal_startrek()(7) %>% show_col
+
+ggplot_DAC <- function(gene){
+filter(TMM.mat.DAC.ggplot, genesym == gene) %>% 
+  ggplot(aes(y = values, x = group, col = group)) + 
+  geom_boxplot(outlier.shape = NA) + 
+  geom_point(alpha = 1, size = 2) +
+  geom_line(aes(group=lines), col="red") + 
+# geom_jitter(alpha = 1, size = 2, position = position_jitter(seed = 1)) + 
+    scale_color_manual(values = col_npg4) + 
+    ggtitle(gene) +
+  # position = position_jitter(seed = 1) taken out  
+    geom_text_repel(aes(label = samples), size = 3, vjust = 2) +
+    theme_bw() + 
+    scale_y_continuous("gene expression (log2)") +
+    theme(axis.text=element_text(size=12),
+       axis.title.x.bottom=element_blank(),
+       axis.title.y=element_text(size=12), legend.position = "none", plot.title = element_text(hjust=0.5,size=15))
+}
+
+```
+
+

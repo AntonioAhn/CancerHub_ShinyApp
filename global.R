@@ -7,6 +7,10 @@ library(ggsci)
 library(shinycssloaders)
 library(shinyHeatmaply)
 library(heatmaply)
+library(ggplot2)
+library(ggpubr)
+library(ggrepel)
+
 
 
 ##-------------------------------------------------------------
@@ -15,7 +19,7 @@ library(heatmaply)
 
 load(file = "data/NZM_PDL1_data.RData")
 
-
+load(file = "data/PDL1_DACVitC_data.RData")
 
 
 ##-------------------------------------------------------------

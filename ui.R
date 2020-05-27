@@ -34,17 +34,25 @@ tagList(dashboardPage(skin = "blue",
     ),
     dashboardSidebar(
       sidebarMenu(id = "side_bar",
-                    menuItem(text = "Information",
+                  menuItem(text = "Information",
                              tabName = "Info"),
-                    menuItem(text = "RNAseq data",
+                  menuItem(text = "RNAseq data",
                              tabName = "RNAseq_NZM", 
                              badgeLabel = "NZM cell lines",
                              badgeColor = "blue"),
-                    menuItem(text = "RNAseq data",
+                  menuItem(text = "RNAseq data",
                              tabName = "RNAseq_PDL1",
                              badgeLabel = "PD-L1 cell lines",
                              badgeColor = "blue"),
-                    menuItem(text = "DNA methylation Data (RRBS)",
+                  menuItem(text = "RNAseq data",
+                           tabName = "RNAseq_DACVitC",
+                           badgeLabel = "DAC/VitC treated",
+                           badgeColor = "blue"),
+                  menuItem(text = "Exomeseq data",
+                           tabName = "Exome",
+                           badgeLabel = "NZM cell lines",
+                           badgeColor = "blue"),
+                  menuItem(text = "DNA methylation Data (RRBS)",
                              tabName = "RRBS")
         )
     ),
@@ -52,6 +60,8 @@ tagList(dashboardPage(skin = "blue",
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")),
       tabItems(
+        tabItem(tabName = "RRBS"),
+        tabItem(tabName = "Exome"),
         tabItem(tabName = "Info", tabBox(title = "", width = NULL,
                                          tabPanel(title = "Welcome to CanerHub",
                                                   icon = icon("info"),
@@ -63,7 +73,6 @@ tagList(dashboardPage(skin = "blue",
                                                   icon = icon("info"),
                                                   fluidRow(column(includeMarkdown("document/PDL1cellLines.md"), width = 12, offset = 0)))
                                          )),
-        tabItem(tabName = "RRBS"),
         tabItem(tabName = "RNAseq_NZM",
                 tabBox(title = "", width = NULL, 
                        tabPanel(title = "Boxplot all samples",
@@ -73,20 +82,20 @@ tagList(dashboardPage(skin = "blue",
                                   encoding = "UTF-8"
                                   )
                            ),
-                           tabPanel(title = "correlation plot",
-                                    source(
-                                      file = "ui-NZM-corplot.R",
-                                      local = TRUE,
-                                      encoding = "UTF-8"
-                                      )
-                                    ),
-                           tabPanel(title = "PCA plot",
-                                    source(
-                                      file = "ui-NZM-PCA.R",
-                                      local = TRUE,
-                                      encoding = "UTF-8"
-                                      )
-                                    ),
+                       tabPanel(title = "correlation plot",
+                                source(
+                                  file = "ui-NZM-corplot.R",
+                                  local = TRUE,
+                                  encoding = "UTF-8"
+                                  )
+                                ),
+                       tabPanel(title = "PCA plot",
+                                source(
+                                  file = "ui-NZM-PCA.R",
+                                  local = TRUE,
+                                  encoding = "UTF-8"
+                                  )
+                                ),
                        tabPanel(title = "heatmap (sample and gene hclustering)",
                                 source(
                                   file = "ui-NZM-hclust.R",
@@ -106,7 +115,7 @@ tagList(dashboardPage(skin = "blue",
                                   encoding = "UTF-8"
                                 )
                        ),
-                       tabPanel(title = "correlation plot",
+                        tabPanel(title = "correlation plot",
                                 source(
                                   file = "ui-PDL1-corplot.R",
                                   local = TRUE,
@@ -125,15 +134,27 @@ tagList(dashboardPage(skin = "blue",
                                   file = "ui-PDL1-hclust.R",
                                   local = TRUE,
                                   encoding = "UTF-8"
+                                  )
                                 )
                        )
+                ),
+        tabItem(tabName = "RNAseq_DACVitC",
+                tabBox(title = "", width = NULL, 
+                       tabPanel(title = "Boxplot all samples",
+                                source(
+                                  file = "ui-DACVitC-boxplot.R",
+                                  local = TRUE,
+                                  encoding = "UTF-8"
+                                )
                        )
                 )
         )
+      )
     )
-    ),
+),
 tags$footer(
     tags$p("Copyright © 2019"), 
+    tags$a(" maurice wilkins centre", href = "http://www.mauricewilkinscentre.org/"),
     tags$a(" Cancer Hub", href = "https://cancerhub.net/"),
 #    tags$a(" Eccles Lab ", href = "https://www.otago.ac.nz/dsm-pathology/research/otago114692.html"), 
 #   tags$a(" Chatterjee Lab ", href = "https://www.otago.ac.nz/chatterjee-lab/index.html"),

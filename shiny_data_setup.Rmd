@@ -6,31 +6,86 @@ output: html_document
 ---
 
 
-## NZM cell lines dataset # total same names (74 samples)
+# NZM cell lines dataset # total same names (74 samples)
 
 ```{r}
 library(tidyverse)
 ```
 
 ```{r}
-## NZM cell lines dataset # total same names (74 samples)
+# loading the RNAseq (NZM_RNAseqdata_boxplot) and mutation datasets (NZM_mutation_info)
+
+# Information: NZM cell lines dataset has 74 melanoma samples
+# All_NZM_tpm_GeneName_tidied.csv is the "tidied" up dataset. Tidied by removing rows with NA for gene symbol 
+# originally there was 63677  rows but 37947 weres NAs, 25730 were not NAs
+# Moreover, 1117 rows were gene name duplicates. Out of the duplicates, the gene with the higher Median Absolute Deviation was selected. 
+# Thus 63677 (total) - 37947 (NAs) - 1117 (duplicates) generated 24613 genes for the final dataset
 NZM_RNAseqdata_boxplot <- read_csv(file = "data/All_NZM_tpm_GeneName_tidied.csv")
 #  24613 rows (for genes), 76 columns (first 2 columns are "ensemblID" and "symbols")
 dim(NZM_RNAseqdata_boxplot)
+
+# loading the sequenom mutation datasets (NZM_mutation_info)
+NZM_mutation_info <- read_csv(file="data/NZMcellllines_mutations_info_sequenom_tidied.csv")
+NZM_mutation_info %>% dim
+
+## -----------------------------------------------------------------------------
+### -----------------------------------------------------------------------------
+# NZM cell line name changes 
+# underscore is in the NZM names are removed except for NZM91_1 and NZM91_2
+colnames(NZM_RNAseqdata_boxplot) 
+colnames(NZM_RNAseqdata_boxplot)  <- gsub("_", "",colnames(NZM_RNAseqdata_boxplot))
+# NZM91_1 and NZM91_2 are re-added
+colnames(NZM_RNAseqdata_boxplot)[colnames(NZM_RNAseqdata_boxplot) %in% c("NZM911", ("NZM912"))] <- c("NZM91_1", "NZM91_2")
+
+# "NZM1" "NZM2" "NZM3" "NZM4" "NZM7" are changed to NZM01 and NZM07 etc. 
+grep("NZM.$", colnames(NZM_RNAseqdata_boxplot), value =TRUE)
+colnames(NZM_RNAseqdata_boxplot)[grep("NZM.$", colnames(NZM_RNAseqdata_boxplot))] <- c("NZM01", "NZM02", "NZM03", "NZM04", "NZM07", "NZM06")
+
+# There are also replicates for NZM92
+colnames(NZM_RNAseqdata_boxplot)[colnames(NZM_RNAseqdata_boxplot) == "NZM92"] <- c("NZM92_1", "NZM92_2")
+
+### -----------------------------------------------------------------------------
+### -----------------------------------------------------------------------------
+
+NZM_all_samples <- select(NZM_RNAseqdata_boxplot, NZM01:NZM97) %>% colnames
+table(NZM_all_samples == NZM_mutation_info$NZM_matched)
+
 # remove the "ensemblID" column
 NZM_RNAseqdata_corplot <- NZM_RNAseqdata_boxplot[,-1]
 NZM_RNAseqdata_boxplot <- NZM_RNAseqdata_boxplot[,-1]
-# batch1 samples (40 samples. NZM1 to NZM98)
-NZM_batch1_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM1:NZM98) %>% colnames
-# batch2 samples (34 samples. NZM1 to NZM98)
-NZM_batch2_samples <- dplyr::select(NZM_RNAseqdata_boxplot, NZM_10:NZM_97) %>% colnames
-# all samples
-NZM_batch1and2_samples <- c(NZM_batch1_samples, NZM_batch2_samples)
+
 # tidy up the NZM_RNAseqdata_boxplot dataframe for boxplots
 NZM_RNAseqdata_boxplot <- gather(NZM_RNAseqdata_boxplot, key = samples, value = values, -c(symbols))
 NZM_RNAseqdata_boxplot$values <- log2(NZM_RNAseqdata_boxplot$values + 1)
-NZM_RNAseqdata_boxplot$batch <- ifelse(NZM_RNAseqdata_boxplot$samples %in% NZM_batch1_samples, "batch1", "batch2") %>% factor 
 NZM_RNAseqdata_boxplot$samples <- NZM_RNAseqdata_boxplot$samples %>% factor
+
+##------------
+# adding BRAF/NRAS/WT mutation information to the boxplot dataframe
+NZM_RNAseqdata_boxplot$mut.subtype <- ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, mut.subtype == "BRAF")$NZM_matched, "BRAF",
+                                              ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, mut.subtype == "NRAS")$NZM_matched, "NRAS", 
+                                                     ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, mut.subtype == "UD")$NZM_matched, "UD", "WT")))
+
+# factoring the mutation info
+NZM_RNAseqdata_boxplot$mut.subtype <- factor(NZM_RNAseqdata_boxplot$mut.subtype, levels = c("BRAF", "NRAS", "WT", "UD"))
+
+##------------
+# adding TERT mutation information to the boxplot dataframe
+NZM_RNAseqdata_boxplot$TERT.subtype <- ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, TERT == "C228T")$NZM_matched, "C228T",
+                                              ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, TERT == "C250T")$NZM_matched, "C250T", 
+                                                     ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, TERT == "C228T/C250T")$NZM_matched, "C228T/C250T", 
+                                                            ifelse(NZM_RNAseqdata_boxplot$samples %in% filter(NZM_mutation_info, TERT == "WT")$NZM_matched, "WT", "UD"))))
+# factoring the mutation info
+NZM_RNAseqdata_boxplot$TERT.subtype <- factor(NZM_RNAseqdata_boxplot$TERT.subtype, levels = c("C228T", "C250T", "C228T/C250T", "WT", "UD"))
+```
+
+## NZM data save data
+
+```{r eval=FALSE}
+save.image(file = "data/NZM_data.RData")
+
+load("data/NZM_PDL1_data.RData")
+
+rm(list = c(ls()))
 ```
 
 # PDL1 cell lines dataset # total same names (23 samples)
@@ -38,30 +93,48 @@ NZM_RNAseqdata_boxplot$samples <- NZM_RNAseqdata_boxplot$samples %>% factor
 ```{r}
 ## PDL1 cell lines dataset # total same names (23 samples)
 
+# load the gene expression dataset (TPM values) for 23 melanoma samples
 PDL1_RNAseqdata_boxplot <- read_csv(file="data/TPM.rBE.PDL1_tidied.csv")
+# load the sample information table
 PDL1_RNAseqdata_sampleinfo <- read_csv(file="data/s2c_PDL1.csv")
 
-PDL1_RNAseqdata_sampleinfo$batch <- factor(PDL1_RNAseqdata_sampleinfo$batch, levels = c(1,2,3,4), labels = c("batch1", "batch2", "batch3", "batch4"))
+# batch labels are changed. "1" becomes "batch1" etc. 
+#PDL1_RNAseqdata_sampleinfo$batch <- factor(PDL1_RNAseqdata_sampleinfo$batch, levels = c(1,2,3,4), labels = c("batch1", "batch2", "batch3", "batch4"))
 
+#--------------------------------------------------------------------------------------------------
+# PD-L1 protein data
+# loading the PD-L1 protein expression level that was assessed with flow cytometry
+PDL1_FACS_df <- read.csv(file = "data/PDL1_FACS_data.csv", 
+row.names = 1)
+# aquiring a matched index for the colnams in the PDL1_RNAseqdata_boxplot and the PDL1_FACS_df
+index <- match(colnames(PDL1_RNAseqdata_boxplot)[-1], 
+      filter(PDL1_FACS_df, average == "median_sub")$newsample)
+# using the index to add in the PDL1 protein values into PDL1_RNAseqdata_boxplot
+PDL1_RNAseqdata_boxplot <- rbind(PDL1_RNAseqdata_boxplot, c("",log2(filter(PDL1_FACS_df, average == "median_sub")$PDL1[index])) %>% as.numeric)
+# the first value (for symbol) for the PDL1 protein row is empty. Adding "PDL1.protein" as the "symbol" for this symbol column. 
+PDL1_RNAseqdata_boxplot[57979, 1] <- "PDL1.protein"
+#--------------------------------------------------------------------------------------------------
 
+# separating out the boxplot dataframe from the correlation plot dataframe
 PDL1_RNAseqdata_corplot <- PDL1_RNAseqdata_boxplot
+
+# tidying up the boxplot dataframe for generating boxplots
 PDL1_RNAseqdata_boxplot <- gather(PDL1_RNAseqdata_boxplot, key = samples, value = values, -c(symbols))
-
-PDL1_samplenames <- PDL1_RNAseqdata_sampleinfo$newnames
-
-# Adding batch information
-PDL1_RNAseqdata_boxplot$batch <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch1")$newnames, "batch1", 
-                                        ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch2")$newnames, "batch2", 
-                                               ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, batch == "batch3")$newnames, "batch3", "batch4")))
-# adding mutation information
+# adding mutation information to the boxplot dataframe
 PDL1_RNAseqdata_boxplot$mut.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$newnames, "BRAF",
                                               ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$newnames, "NRAS", "WT"))
-# adding PDL1 information
-PDL1_RNAseqdata_boxplot$PDL1.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Inducible")$newnames, "Inducible",
-                                               ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Intermediate")$newnames, "Intermediate", "Constitutive"))
+# factoring the mutation info
+PDL1_RNAseqdata_boxplot$mut.subtype <- factor(PDL1_RNAseqdata_boxplot$mut.subtype, levels = c("BRAF", "NRAS", "WT"))
+
+PDL1_all_samples <- PDL1_RNAseqdata_sampleinfo$newnames
+# adding PDL1 status information to the boxplot dataframe
+#PDL1_RNAseqdata_boxplot$PDL1.subtype <- ifelse(PDL1_RNAseqdata_boxplot$samples %in% filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Inducible")$newnames, "Inducible",
+#                                              ifelse(PDL1_RNAseqdata_boxplot$samples %in% #filter(PDL1_RNAseqdata_sampleinfo, PDL1.group == "Intermediate")$newnames, "Intermediate", "Constitutive"))
 ```
 
-```{r}
+```{r eval=FALSE}
+# Dont have to do this anymore
+# making the sample names according to batch numbers
 PDL1_batch1_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch1")$newnames
 PDL1_batch2_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch2")$newnames
 PDL1_batch3_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch3")$newnames
@@ -69,27 +142,169 @@ PDL1_batch4_samples <- filter(PDL1_RNAseqdata_sampleinfo, batch == "batch4")$new
 PDL1_all_samples <- PDL1_RNAseqdata_sampleinfo$newnames 
 ```
 
-# PD-L1 protein data 
+
+## PDL1 save data 
+
+```{r eval=FALSE}
+save.image(file = "data/PDL1_data.RData")
+
+load("data/NZM_PDL1_data.RData")
+
+rm(list = ls())
+```
+
+
+
+# DAC VitC treatment dataset (23 samples)
 
 ```{r}
-PDL1_FACS_df <- read.csv(file = "data/PDL1_FACS_data.csv", 
-row.names = 1)
+## PDL1 cell lines dataset # total same names (23 samples)
 
-index <- match(colnames(PDL1_RNAseqdata_corplot)[-1], 
-      filter(PDL1_FACS_df, average == "median_sub")$newsample)
+# load the gene expression dataset (TPM values + with the removeBatcheffect (edgeR)) for 33 melanoma samples
+DACVitC_RNAseqdata_boxplot <- read_csv(file="~/Dropbox/2020/Shiny_casualcontract_MikeEccles/CancerHub_ShinyApp/data/TPM.rBE.DACVitC_tidied.csv") 
+# load the sample information table
+DACVitC_RNAseqdata_sampleinfo <- read_csv(file="~/Dropbox/2020/Shiny_casualcontract_MikeEccles/CancerHub_ShinyApp/data/PDL1.DACVitc.info.csv") 
+```
 
-PDL1_RNAseqdata_corplot <- rbind(PDL1_RNAseqdata_corplot, c("",log2(filter(PDL1_FACS_df, average == "median_sub")$PDL1[index])) %>% as.numeric)
 
-PDL1_RNAseqdata_corplot[57979, 1] <- "PDL1.protein"
+## Making the DAC (only) objects
+
+This has been excluded for now 
+
+```{r eval=FALSE}
+# making a separate sampleinfo and boxplot dataframe for only the control and DAC treated samples (excluding VitC and VitC+DAC treated samples)
+DAC_RNAseqdata_sampleinfo <- filter(DACVitC_RNAseqdata_sampleinfo, condition %in% "control" | condition %in% "DAC")
+DAC_RNAseqdata_boxplot <- dplyr::select(DACVitC_RNAseqdata_boxplot, symbols, DAC_RNAseqdata_sampleinfo$sample)
+
+# DACVitC_RNAseqdata_corplot <- DACVitC_RNAseqdata_boxplot
+```
+
+```{r eval=FALSE}
+DAC_RNAseqdata_boxplot <- gather(DAC_RNAseqdata_boxplot, key=samples, value=values, -symbols)
+
+
+##----
+# adding the control and DAC group
+control_samplenames <- filter(DAC_RNAseqdata_sampleinfo, condition == "control")$sample
+DAC_RNAseqdata_boxplot$group <- ifelse(DAC_RNAseqdata_boxplot$samples %in% control_samplenames, "control", "DAC")
+
+##----
+# adding the mutation subtype
+BRAF_samplenames <- filter(DAC_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$sample
+NRAS_samplenames <- filter(DAC_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$sample
+DAC_RNAseqdata_boxplot$mut.subtype <- ifelse(DAC_RNAseqdata_boxplot$samples %in% BRAF_samplenames, "BRAF", 
+                                       ifelse(DAC_RNAseqdata_boxplot$samples %in% NRAS_samplenames, "NRAS","WT"))
+
+##----
+# adding paired group 
+# First need to add to the DAC_RNAseqdata_sampleinfo
+DAC_RNAseqdata_sampleinfo$paired <- DAC_RNAseqdata_sampleinfo$cellline %>% as.factor %>% as.numeric %>% sort
+# make a list with each pair
+pairednames <- c()
+for (i in 1:12){
+a <- filter(DAC_RNAseqdata_sampleinfo, paired == i)$sample
+pairednames[[i]] <- c(a) 
+}
+# adding paired group into DAC_RNAseqdata_boxplot
+DAC_RNAseqdata_boxplot$lines <- ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[1]], "1", 
+                                   ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[2]], "2",
+                                          ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[3]], "3",
+                                                 ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[4]], "4",
+                                                        ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[5]], "5",
+                                                               ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[6]], "6",
+                                                                      ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[7]], "7",
+                                                                             ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[8]], "8",
+                                                                                    ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[9]], "9", 
+                                                                                           ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[10]], "10", 
+                                                                                                  ifelse(DAC_RNAseqdata_boxplot$samples %in% pairednames[[11]], "11", "12")))))))))))
+
+DAC_RNAseqdata_boxplot$lines %>% table
+
+##----
+# add in cell line name 
+# names(pairednames) <- DAC_RNAseqdata_sampleinfo$cellline %>% unique
+DAC_RNAseqdata_boxplot$lines <- DAC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+DAC_RNAseqdata_boxplot$CellLines  <- factor(DAC_RNAseqdata_boxplot$lines, levels = c(1:12), labels = c(DAC_RNAseqdata_sampleinfo$cellline %>% unique))
+
+##----
+# making it into a factor and correcting the levels 
+DAC_RNAseqdata_boxplot$mut.subtype <- DAC_RNAseqdata_boxplot$mut.subtype %>% factor(levels=c("BRAF", "NRAS", "WT"))
+DAC_RNAseqdata_boxplot$group <- DAC_RNAseqdata_boxplot$group %>% factor(levels=c("control", "DAC"))
+# DAC_RNAseqdata_boxplot$lines <- DAC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+```
+
+## Making the DAC or/and VitC objects
+
+```{r}
+DACVitC_RNAseqdata_corplot <- DACVitC_RNAseqdata_boxplot 
+```
+
+```{r}
+DACVitC_RNAseqdata_boxplot <- gather(DACVitC_RNAseqdata_boxplot, key=samples, value=values, -symbols)
+
+##----
+# adding the control and DACVitC group
+control_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "control")$sample
+DAC_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "DAC")$sample
+VitC_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, condition == "VitC")$sample
+DACVitC_RNAseqdata_boxplot$group <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% control_samplenames, "control", 
+                                           ifelse(DACVitC_RNAseqdata_boxplot$samples %in% DAC_samplenames, "DAC",
+                                                  ifelse(DACVitC_RNAseqdata_boxplot$samples %in% VitC_samplenames, "VitC", "DAC.VitC")))
+
+##----
+# adding the mutation subtype
+BRAF_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, mut.subtype == "BRAF")$sample
+NRAS_samplenames <- filter(DACVitC_RNAseqdata_sampleinfo, mut.subtype == "NRAS")$sample
+DACVitC_RNAseqdata_boxplot$mut.subtype <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% BRAF_samplenames, "BRAF", 
+                                       ifelse(DACVitC_RNAseqdata_boxplot$samples %in% NRAS_samplenames, "NRAS","WT"))
+
+##----
+# adding paired group 
+# First need to add to the DACVitC_RNAseqdata_sampleinfo
+DACVitC_RNAseqdata_sampleinfo$paired <- DACVitC_RNAseqdata_sampleinfo$cellline %>% factor(levels = unique(DACVitC_RNAseqdata_sampleinfo$cellline)) %>% as.numeric %>% sort
+# make a list with each pair
+pairednames <- c()
+for (i in 1:12){
+a <- filter(DACVitC_RNAseqdata_sampleinfo, paired == i)$sample
+pairednames[[i]] <- c(a) 
+}
+# adding paired group into DACVitC_RNAseqdata_boxplot
+DACVitC_RNAseqdata_boxplot$lines <- ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[1]], "1", 
+                                   ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[2]], "2",
+                                          ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[3]], "3",
+                                                 ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[4]], "4",
+                                                        ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[5]], "5",
+                                                               ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[6]], "6",
+                                                                      ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[7]], "7",
+                                                                             ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[8]], "8",
+                                                                                    ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[9]], "9", 
+                                                                                           ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[10]], "10", 
+                                                                                                  ifelse(DACVitC_RNAseqdata_boxplot$samples %in% pairednames[[11]], "11", "12")))))))))))
+
+DACVitC_RNAseqdata_boxplot$lines %>% table
+
+##----
+# add in cell line name 
+# names(pairednames) <- DACVitC_RNAseqdata_sampleinfo$cellline %>% unique
+DACVitC_RNAseqdata_boxplot$lines <- DACVitC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
+DACVitC_RNAseqdata_boxplot$CellLines  <- factor(DACVitC_RNAseqdata_boxplot$lines, levels = c(1:12), labels = c(DACVitC_RNAseqdata_sampleinfo$cellline %>% unique))
+
+##----
+# making it into a factor and correcting the levels 
+DACVitC_RNAseqdata_boxplot$mut.subtype <- DACVitC_RNAseqdata_boxplot$mut.subtype %>% factor(levels=c("BRAF", "NRAS", "WT"))
+DACVitC_RNAseqdata_boxplot$group <- DACVitC_RNAseqdata_boxplot$group %>% factor(levels=c("control", "DAC", "VitC", "DAC.VitC"))
+# DACVitC_RNAseqdata_boxplot$lines <- DACVitC_RNAseqdata_boxplot$lines %>% factor(levels = c(1:12))
 ```
 
 # save data
 
-```{r eval=FALSE}
-save.image(file = "data/NZM_PDL1_data.RData")
-
-load("data/NZM_PDL1_data.RData")
+```{r}
+rm(list = c("a", "control_samplenames", "i", "pairednames"))
 ```
 
+```{r eval=FALSE}
+save.image(file = "data/PDL1_DACVitC_data.RData")
 
+load("data/PDL1_DACVitC_data.RData")
+```
 
