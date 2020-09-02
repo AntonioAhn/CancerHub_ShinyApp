@@ -16,7 +16,7 @@ library(ggrepel)
 ##-------------------------------------------------------------
 
 
-
+# these RData were produced using shiny_data_setup.Rmd
 load(file = "data/NZM_PDL1_data.RData")
 
 load(file = "data/PDL1_DACVitC_data.RData")
