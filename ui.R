@@ -5,7 +5,7 @@ library(shinyWidgets)
 
 tagList(dashboardPage(skin = "blue",
     dashboardHeader(
-    title = "NZM cell lines analysis",
+    title = "NZM Cell Lines Bioportal",
     titleWidth = 500,
     dropdownMenu(
         type = "messages",
@@ -13,14 +13,14 @@ tagList(dashboardPage(skin = "blue",
             from = "Cancer Hub",
             message = "Go to CancerHub",
             icon = icon("book"),
-            time = "Published 2019-07-09",
+            time = "Published 2020-05-28",
             href = "https://cancerhub.net/"
         ),
         messageItem(
             from = "Source Code",
             message = "Available on Github",
-            time = "Update at 2020-04-13",
-            href = "https://github.com/AntonioAhn/"
+            time = "Update at 2020-05-28",
+            href = "https://github.com/AntonioAhn/CancerHub_ShinyApp"
         ),
         messageItem(
             from = "About Us",
@@ -36,32 +36,34 @@ tagList(dashboardPage(skin = "blue",
       sidebarMenu(id = "side_bar",
                   menuItem(text = "Information",
                              tabName = "Info"),
-                  menuItem(text = "RNAseq data",
+                  menuItem(text = "NZM cell lines",
                              tabName = "RNAseq_NZM", 
-                             badgeLabel = "NZM cell lines",
+                             badgeLabel = "RNAseq",
                              badgeColor = "blue"),
-                  menuItem(text = "RNAseq data",
+                  menuItem(text = "PD-L1 cell lines",
                              tabName = "RNAseq_PDL1",
-                             badgeLabel = "PD-L1 cell lines",
+                             badgeLabel = "RNAseq",
                              badgeColor = "blue"),
-                  menuItem(text = "RNAseq data",
+                  menuItem(text = "DAC/VitC treated",
                            tabName = "RNAseq_DACVitC",
-                           badgeLabel = "DAC/VitC treated",
+                           badgeLabel = "RNAseq",
                            badgeColor = "blue"),
-                  menuItem(text = "Exomeseq data",
-                           tabName = "Exome",
-                           badgeLabel = "NZM cell lines",
+                  menuItem(text = "NZM cell lines",
+                           tabName = "Exome_NZM",
+                           badgeLabel = "Exomeseq",
                            badgeColor = "blue"),
-                  menuItem(text = "DNA methylation Data (RRBS)",
-                             tabName = "RRBS")
+                  menuItem(text = "NZM cell lines",
+                           tabName = "RRBS_NZM",
+                           badgeLabel = "DNA methylation",
+                           badgeColor = "blue")
         )
     ),
     dashboardBody(
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")),
       tabItems(
-        tabItem(tabName = "RRBS"),
-        tabItem(tabName = "Exome"),
+        tabItem(tabName = "RRBS_NZM"),
+        tabItem(tabName = "Exome_NZM"),
         tabItem(tabName = "Info", tabBox(title = "", width = NULL,
                                          tabPanel(title = "Welcome to CanerHub",
                                                   icon = icon("info"),

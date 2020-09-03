@@ -29,6 +29,37 @@ fluidPage(column(width = 12,
                                             DT::DTOutput("DT_DACVitC_boxplot") %>% withSpinner())
                                  )
                                  )
+                        ),
+                        tabPanel(title = tagList(icon("dna"), "Boxplot (paired samples)"),
+                                 fluidPage(column(width = 3,
+                                                  box(title = tagList(icon("dna"), "Enter Parameters"),
+                                                      width = NULL,
+                                                      solidHeader = TRUE,
+                                                      status = "primary",
+                                                      footer = "press make plot to generate the new figure",
+                                                      textInput(inputId= "DACVitC_paired_boxplot_gene1", label = h3("Enter your gene:"), value = "EBF3"),
+                                                      checkboxInput("DACVitC_paired_boxplot_samples","Select samples instead of showing all samples?", value=FALSE),
+                                                      conditionalPanel("input.DACVitC_paired_boxplot_samples==true",
+                                                                       selectizeInput(inputId= "DACVitC_paired_boxplot_samplelist", label = "select your samples:",choices = unique(DACVitC_RNAseqdata_sampleinfo$cellline), multiple = TRUE)),
+                                                      radioGroupButtons(inputId = "DACVitC_paired_boxplot_treatmentgroup", 
+                                                                        label = "select treatment group", 
+                                                                        choices = list("DAC" = "DAC", "VitC" = "VitC", "DAC and VitC" = "DAC.VitC"), 
+                                                                        selected = "DAC.VitC",
+                                                                        status = "primary",
+                                                                        checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))),
+                                                      do.call(actionBttn, c(list( inputId = "DACVitC_paired_make_boxplot_all", label = "make plot", icon = icon("play")), actionBttnParams)),
+                                                      downloadButton(outputId = "DACVitC_paired_download_boxplot_data_all", label = "Download data")
+                                                  )
+                                 ),
+                                 column(width = 9,
+                                        box(title = "Boxplot all",
+                                            status = "primary",
+                                            solidHeader = TRUE,
+                                            width = NULL,
+                                            plotOutput("plot_DACVitC_paired_boxplot_all") %>% withSpinner(),
+                                            DT::DTOutput("DT_DACVitC_paired_boxplot") %>% withSpinner())
+                                 )
+                                 )
                         )
                         
                  )

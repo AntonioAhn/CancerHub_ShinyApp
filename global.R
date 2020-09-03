@@ -15,13 +15,10 @@ library(ggrepel)
 
 ##-------------------------------------------------------------
 
-
-
-load(file = "data/NZM_PDL1_data.RData")
-
+# load RData files
+load(file = "data/NZM_data.RData")
+load(file = "data/PDL1_data.RData")
 load(file = "data/PDL1_DACVitC_data.RData")
-
-
 ##-------------------------------------------------------------
 
 # parameters for actionBttn
